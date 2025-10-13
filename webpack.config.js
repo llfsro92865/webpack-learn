@@ -32,6 +32,16 @@ export default {
         use: [
           isProduction ? MiniCssExtractPlugin.loader : "style-loader",
           "css-loader",
+          "postcss-loader", // 自动添加浏览器前缀
+        ],
+      },
+      {
+        test: /\.less$/i,
+        use: [
+          isProduction ? MiniCssExtractPlugin.loader : "style-loader",
+          "css-loader",
+          "postcss-loader", // 自动添加浏览器前缀
+          "less-loader",
         ],
       },
     ],
