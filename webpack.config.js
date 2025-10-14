@@ -3,6 +3,7 @@ import { fileURLToPath } from "url";
 import { dirname } from "path";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import MiniCssExtractPlugin from "mini-css-extract-plugin";
+import EslintPlugin from "eslint-webpack-plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -12,7 +13,7 @@ const isProduction = NODE_ENV === "production";
 
 export default {
   mode: NODE_ENV,
-  entry: "./src/index.js", // 单入口默认输出文件名是 main.js 等同于 =>  entry: { main: './src/index.js' }
+  entry: "./src/index.ts", // 单入口默认输出文件名是 main.js 等同于 =>  entry: { main: './src/index.js' }
   // entry: ['./src/bundle1.js', './src/bundle2.js'],
   // entry: { // 多入口
   //   bundle1: './src/bundle1.js',
@@ -27,6 +28,25 @@ export default {
   },
   module: {
     rules: [
+      {
+        test: /\.ts$/i,
+        exclude: /node_modules/,
+        use: [
+          // "ts-loader" // 也可以用 babel-loader
+          {
+            loader: "babel-loader",
+            options: {
+              presets: [
+                "@babel/preset-typescript", // 转换TypeScript语法
+              ],
+              plugins: [
+                // "@babel/plugin-proposal-class-properties", // 支持类的属性
+                // "@babel/plugin-proposal-object-rest-spread", // 支持对象展开运算符
+              ],
+            },
+          },
+        ]
+      },
       {
         test: /\.css$/i,
         use: [
@@ -44,6 +64,19 @@ export default {
           "less-loader",
         ],
       },
+      {
+        test: /\.js$/i,
+        exclude: /node_modules/,
+        use: {
+          loader: "babel-loader",
+          // 如果配置了 Babel 配置文件，就不需要在这里配置 options 了
+          // options: {
+          //   presents: ["@babel/preset-env"], // 直接用预设
+          //   plugins: ['@babel/plugin-proposal-object-rest-spread'], // 也可以单独用插件
+          // }
+        }
+      },
+      
     ],
   },
   plugins: [
@@ -55,6 +88,11 @@ export default {
     new MiniCssExtractPlugin({
       filename: "[name].[contenthash].css",
     }),
+    new EslintPlugin({
+      extensions: ["ts", "js"],
+      // exclude: "node_modules",
+      // fix: true, // 自动修复
+    })
 
     // 如果是多入口，就需要配置多个 HtmlWebpackPlugin
     // new HtmlWebpackPlugin({
@@ -74,7 +112,7 @@ export default {
     //   progress: true,
     // },
     port: 3000,
-    open: true,
+    open: false,
     hot: true,
     compress: true, // 启用 gzip 压缩
     // static: {
