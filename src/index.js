@@ -1,6 +1,7 @@
-import './index.less';
+import "./index.less";
+import { Vonder } from "./vonder.js";
 
-console.log('hello webpack')
+console.log("hello webpack", Vonder);
 
 // src/index.js
 // const add = (a, b) => a + b;

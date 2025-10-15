@@ -13,12 +13,29 @@ const isProduction = NODE_ENV === "production";
 
 export default {
   mode: NODE_ENV,
-  entry: "./src/index.ts", // 单入口默认输出文件名是 main.js 等同于 =>  entry: { main: './src/index.js' }
+  // entry: "./src/index.ts", // 单入口默认输出文件名是 main.js 等同于 =>  entry: { main: './src/index.js' }
   // entry: ['./src/bundle1.js', './src/bundle2.js'],
   // entry: { // 多入口
   //   bundle1: './src/bundle1.js',
   //   bundle2: './src/bundle2.js'
   // },
+  entry: {
+    // // vonder: "./src/vonder.js",
+    // main: {
+    //   import: "./src/index.js",
+    //   // dependOn: "vonder", // 依赖共享模块
+    //   runtime: 'runtime-main'
+    // }
+
+    bundle1: {
+      import: "./src/bundle1.js",
+      runtime: "runtime",
+    },
+    bundle2: {
+      import: "./src/bundle2.js",
+      runtime: "runtime",
+    },
+  },
   output: {
     // filename: 'main.js', // 输入的文件名字
     filename: "[name].[contenthash].js", // 输入的文件名字
@@ -45,7 +62,7 @@ export default {
               ],
             },
           },
-        ]
+        ],
       },
       {
         test: /\.css$/i,
@@ -74,9 +91,8 @@ export default {
           //   presents: ["@babel/preset-env"], // 直接用预设
           //   plugins: ['@babel/plugin-proposal-object-rest-spread'], // 也可以单独用插件
           // }
-        }
+        },
       },
-      
     ],
   },
   plugins: [
@@ -92,7 +108,7 @@ export default {
       extensions: ["ts", "js"],
       // exclude: "node_modules",
       // fix: true, // 自动修复
-    })
+    }),
 
     // 如果是多入口，就需要配置多个 HtmlWebpackPlugin
     // new HtmlWebpackPlugin({
@@ -111,12 +127,41 @@ export default {
     // client: {
     //   progress: true,
     // },
-    port: 3000,
-    open: false,
+    port: 9000,
+    open: true,
     hot: true,
     compress: true, // 启用 gzip 压缩
     // static: {
     //   directory: path.join(__dirname, "dist"),
     // },
+    proxy: [
+      {
+        context: ["/api/getSSE"],
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+        // 使用新的配置方式
+        proxyTimeout: 0, // 禁用超时
+        timeout: 0, // 禁用超时
+        // 直接透传流
+        onProxyReq: (proxyReq, req, res) => {
+          proxyReq.setHeader("accept", "text/event-stream");
+        },
+      },
+      {
+        context: ["/api"],
+        target: "http://localhost:8080",
+        changeOrigin: true,
+        secure: false,
+      },
+    ],
   },
+  // 其他配置
+  // optimization: {
+  //   runtimeChunk: false,  // 禁用运行时代码分离
+  //   splitChunks: false,   // 禁用代码分割
+  //   moduleIds: 'named',   // 使用可读的模块ID
+  //   chunkIds: 'named',    // 使用可读的chunk ID
+  //   minimize: false,      // 禁用压缩
+  // },
 };
